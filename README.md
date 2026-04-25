@@ -2,8 +2,6 @@
 
 **FastWrangler** is a lightweight, high-performance VS Code extension for instant data exploration. Built on top of **DuckDB-Wasm**, it provides a blazing-fast alternative to heavy data tools, allowing you to profile, filter, and analyze massive datasets directly within your editor.
 
-![FastWrangler UI](https://raw.githubusercontent.com/ransananes/fast-wrangler/main/media/preview.png) *(Placeholder for your preview image)*
-
 ## ✨ Key Features
 
 - **Blazing Performance**: Powered by DuckDB-Wasm for lightning-fast SQL queries on local files.
