@@ -1,8 +1,13 @@
 {
   "name": "fast-wrangler",
   "displayName": "FastWrangler",
+  "publisher": "Ran Sananes",
   "description": "Lite, instant alternative to Data Wrangler with DuckDB-Wasm",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ransananes/fast-wrangler"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },
