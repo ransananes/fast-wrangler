@@ -28,16 +28,8 @@
       "explorer/context": [
         {
           "command": "fastWrangler.explore",
-          "when": "resourceExtname == .csv || resourceExtname == .parquet || resourceExtname == .json",
+          "when": "resourceExtname == .csv || resourceExtname == .parquet",
           "group": "navigation"
-        }
-      ],
-      "notebook/cell/title": [
-        {
-          "command": "fastWrangler.explore",
-          "when": "notebookType == 'jupyter-notebook'",
-          "group": "navigation",
-          "alt": "fastWrangler.explore"
         }
       ],
       "debug/variables/context": [
