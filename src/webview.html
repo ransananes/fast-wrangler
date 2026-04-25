@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastWrangler Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/@vscode/webview-ui-toolkit@1.2.2/dist/toolkit.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@vscode/codicons@0.0.33/dist/codicon.css">
+    <style>
+        :root {
+            --accent-color: #8b5cf6;
+            --accent-glow: rgba(139, 92, 246, 0.5);
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --bg-base: #0b0f19;
+            --bg-panel: #111827;
+            --bg-surface: #1f2937;
+            --bg-surface-hover: #374151;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+            --vscode-editor-background: var(--bg-base);
+            --vscode-sideBar-background: var(--bg-panel);
+            --vscode-panel-border: var(--border-color);
+            --vscode-editor-foreground: var(--text-main);
+            --vscode-sideBarTitle-foreground: var(--text-muted);
+            --vscode-input-background: rgba(0, 0, 0, 0.2);
+            --vscode-input-foreground: var(--text-main);
+            --vscode-input-border: rgba(255, 255, 255, 0.1);
+            --vscode-editor-inactiveSelectionBackground: rgba(255, 255, 255, 0.05);
+            --vscode-list-hoverBackground: rgba(255, 255, 255, 0.03);
+            --vscode-statusBar-foreground: var(--text-muted);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            font-size: 13px;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            flex-shrink: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .title {
+            font-weight: 800;
+            font-size: 1.4em;
+            letter-spacing: -0.04em;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0px 4px 12px rgba(99, 102, 241, 0.3);
+            white-space: nowrap;
+        }
+
+        .title::before {
+            content: '';
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-gradient);
+            border-radius: 6px;
+            box-shadow: 0 2px 10px var(--accent-glow);
+        }
+
+        .toolbar-spacer {
+            flex: 1;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 4px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        #search-box {
+            width: 280px;
+            height: 34px;
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0 12px 0 36px;
+            font-size: 13px;
+            font-family: var(--font-main);
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #search-box::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        #search-box:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 320px;
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            font-size: 14px;
+            opacity: 0.5;
+            color: var(--text-muted);
+            transition: opacity 0.2s, color 0.2s;
+            pointer-events: none;
+        }
+
+        #search-box:focus+.search-icon,
+        #search-box:focus~.search-icon {
+            opacity: 1;
+            color: var(--accent-color);
+        }
+
+        vscode-button {
+            transition: transform 0.15s ease, filter 0.2s ease;
+        }
+
+        vscode-button:active {
+            transform: scale(0.95);
+        }
+
+        /* ── Main Layout ─────────────────────────────────────────── */
+        .main-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg-base);
+        }
+
+        /* ── Sidebar Panels ──────────────────────────────────────── */
+        .side-panel {
+            width: 0;
+            overflow: hidden;
+            border-right: 1px solid var(--border-color);
+            background: var(--bg-panel);
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+            z-index: 90;
+        }
+
+        .side-panel.open {
+            width: 380px;
+        }
+
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .panel-header h3 {
+            margin: 0;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .col-card {
+            background: var(--bg-surface);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 16px;
+            padding: 16px;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .col-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+
+        .col-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .col-card-name {
+            font-weight: 600;
+            font-size: 13px;
+            color: #a78bfa;
+            letter-spacing: 0.01em;
+        }
+
+        .col-card-type {
+            font-size: 11px;
+            opacity: 0.8;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .col-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .chart-mini {
+            height: 48px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            padding: 6px;
+            margin-top: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .chart-bar {
+            background: var(--accent-gradient);
+            opacity: 0.7;
+            flex: 1;
+            min-width: 2px;
+            border-radius: 2px 2px 0 0;
+            transition: opacity 0.2s, filter 0.2s;
+        }
+
+        .chart-bar:hover {
+            opacity: 1;
+            filter: brightness(1.2);
+        }
+
+        /* ── Data Grid ───────────────────────────────────────────── */
+        #grid-container {
+            flex-grow: 1;
+            overflow: auto;
+            position: relative;
+            font-size: 13px;
+            background: var(--bg-base);
+            scroll-behavior: smooth;
+        }
+
+        #grid-header {
+            display: flex;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background-color: rgba(17, 24, 39, 0.9);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            min-width: max-content;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .hdr-cell {
+            min-width: 120px;
+            max-width: 300px;
+            padding: 12px 16px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            user-select: none;
+            cursor: pointer;
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s, color 0.2s;
+            font-size: 12px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .hdr-cell:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+        }
+
+        .hdr-cell .type-icon {
+            opacity: 0.8;
+            font-size: 10px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0;
+            text-transform: none;
+        }
+
+        .hdr-cell .sort-icon {
+            margin-left: auto;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .hdr-cell:hover .sort-icon {
+            opacity: 0.4;
+        }
+
+        .hdr-cell .sort-icon.active {
+            opacity: 1;
+            color: var(--accent-color);
+        }
+
+        #grid-spacer {
+            position: relative;
+            min-width: max-content;
+        }
+
+        #grid-rows {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        .grid-row {
+            display: flex;
+            min-width: max-content;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            transition: background-color 0.15s ease;
+        }
+
+        .grid-row:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .cell {
+            min-width: 120px;
+            max-width: 300px;
+            padding: 8px 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border-right: 1px solid rgba(255, 255, 255, 0.03);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            color: #d1d5db;
+        }
+
+        .cell.null {
+            color: #ef4444;
+            opacity: 0.6;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        .cell.num {
+            justify-content: flex-end;
+            font-variant-numeric: tabular-nums;
+            color: #34d399;
+            font-size: 12px;
+        }
+
+        .cell.bool {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        /* ── Overlay & Status ────────────────────────────────────── */
+        .status-bar {
+            font-size: 12px;
+            padding: 8px 24px;
+            background: rgba(17, 24, 39, 0.95);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-weight: 500;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            letter-spacing: 0.02em;
+        }
+
+        #loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(11, 15, 25, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .spinner-large {
+            width: 56px;
+            height: 56px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        #loading-text {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-main);
+            letter-spacing: 0.06em;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── Scrollbar Styling ───────────────────────────────────── */
+        ::-webkit-scrollbar {
+            width: 14px;
+            height: 14px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border: 4px solid var(--bg-base);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="toolbar">
+        <div class="title">Fast Wrangler</div>
+
+        <div class="toolbar-spacer"></div>
+
+        <div class="search-container">
+            <input id="search-box" type="text" placeholder="Global search…" />
+            <span class="codicon codicon-search search-icon"></span>
+        </div>
+
+        <div class="toolbar-group">
+            <vscode-button id="btn-summary" appearance="secondary">
+                <span class="codicon codicon-graph" slot="start"></span> Summary
+            </vscode-button>
+        </div>
+
+        <vscode-divider role="separator" vertical></vscode-divider>
+
+        <div class="toolbar-group">
+            <vscode-button id="btn-export" appearance="primary">
+                <span class="codicon codicon-export" slot="start"></span> Export
+            </vscode-button>
+            <vscode-dropdown id="export-format" style="width: 100px;">
+                <vscode-option>CSV</vscode-option>
+                <vscode-option>Parquet</vscode-option>
+            </vscode-dropdown>
+        </div>
+
+        <div class="toolbar-group pagination-controls" style="gap:4px;">
+            <vscode-button id="btn-prev" appearance="icon" title="Previous Page">
+                <span class="codicon codicon-chevron-left"></span>
+            </vscode-button>
+            <span id="page-info" style="font-size:12px; font-weight:500; min-width:65px; text-align:center;">Page
+                1</span>
+            <vscode-button id="btn-next" appearance="icon" title="Next Page">
+                <span class="codicon codicon-chevron-right"></span>
+            </vscode-button>
+        </div>
+    </div>
+
+    <div class="main-area">
+        <div id="summary-panel" class="side-panel">
+            <div class="panel-header">
+                <h3>Insights & Profiles</h3>
+                <vscode-button appearance="icon" onclick="toggleSummary()"><span
+                        class="codicon codicon-close"></span></vscode-button>
+            </div>
+            <div class="panel-content" id="summary-content">
+                <div style="opacity:0.5; text-align:center; padding-top:40px;">Click 'Summary' to analyze...</div>
+            </div>
+        </div>
+
+        <div id="grid-container">
+            <div id="loading-overlay" style="display:none">
+                <div class="spinner-large"></div>
+                <div id="loading-text">Processing...</div>
+            </div>
+            <div id="grid-header" style="display:none"></div>
+            <div id="grid-spacer" style="display:none">
+                <div id="grid-rows"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="status-bar">
+        <div id="status-left">Ready</div>
+        <div id="status-right"></div>
+    </div>
+
+    <script src="__DUCKDB_BUNDLE__"></script>
+    <script>
+        const DUCKDB_EH_WORKER = '__DUCKDB_EH_WORKER__';
+        const DUCKDB_EH_WASM = '__DUCKDB_EH_WASM__';
+        const fileUri = '__FILE_URI__';
+        const fileExt = '__FILE_EXT__';
+
+        const vscode = acquireVsCodeApi();
+        const duckdb = window.DuckDBBundle;
+
+        const gridContainer = document.getElementById('grid-container');
+        const gridHeader = document.getElementById('grid-header');
+        const gridSpacer = document.getElementById('grid-spacer');
+        const gridRows = document.getElementById('grid-rows');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingText = document.getElementById('loading-text');
+        const statusBarLeft = document.getElementById('status-left');
+        const statusBarRight = document.getElementById('status-right');
+        const summaryPanel = document.getElementById('summary-panel');
+
+        let db, conn;
+        let currentTableName = 'data';
+        let baseTableName = 'raw_data';
+        let totalRows = 0;
+        let pageSize = 1000;
+        let currentPage = 0;
+
+        let columns = [];
+        let colTypes = [];
+        let sortCol = null;
+        let sortDir = null;
+        let searchTerm = '';
+        const ROW_HEIGHT = 36;
+        const OVERSCAN = 10;
+        let poolRows = [];
+        let arrowBatches = [];
+        let pageRowCount = 0;
+        let renderedStart = -1;
+        let renderedEnd = -1;
+
+        async function init() {
+            showLoading('Initializing DuckDB...');
+            try {
+                const workerText = await fetch(DUCKDB_EH_WORKER).then(r => r.text());
+                const workerUrl = URL.createObjectURL(new Blob([workerText], { type: 'application/javascript' }));
+                db = new duckdb.AsyncDuckDB(new duckdb.ConsoleLogger(), new Worker(workerUrl));
+                await db.instantiate(DUCKDB_EH_WASM);
+                conn = await db.connect();
+
+                showLoading('Loading dataset...');
+                const readers = {
+                    csv: `read_csv_auto('input.csv')`,
+                    parquet: `read_parquet('input.parquet')`,
+                    json: `read_json_auto('input.json')`,
+                };
+
+                if (readers[fileExt]) {
+                    await db.registerFileURL(`input.${fileExt}`, fileUri, 4, false);
+                    await conn.query(`CREATE TABLE ${baseTableName} AS SELECT * FROM ${readers[fileExt]}`);
+                } else {
+                    await conn.query(`CREATE TABLE ${baseTableName} AS SELECT i as id, random() as val, (i%5=0) as flag FROM range(100000) t(i)`);
+                }
+
+                await conn.query(`CREATE VIEW ${currentTableName} AS SELECT * FROM ${baseTableName}`);
+
+                await refresh();
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        async function refresh() {
+            showLoading('Fetching data...');
+            try {
+                const startTime = performance.now();
+
+                const countRes = await conn.query(`SELECT COUNT(*) as total FROM ${currentTableName}`);
+                totalRows = Number(countRes.getChildAt(0).get(0));
+
+                let finalQuery = `SELECT * FROM ${currentTableName}`;
+
+                const where = buildWhereClause();
+                if (where) finalQuery += ` WHERE ${where}`;
+                if (sortCol) finalQuery += ` ORDER BY "${sortCol}" ${sortDir}`;
+
+                const offset = currentPage * pageSize;
+                const pageQuery = `${finalQuery} LIMIT ${pageSize} OFFSET ${offset}`;
+
+                const data = await conn.query(pageQuery);
+                const duration = (performance.now() - startTime).toFixed(0);
+
+                columns = data.schema.fields.map(f => f.name);
+                colTypes = data.schema.fields.map(f => {
+                    const t = f.type.toString().toLowerCase();
+                    if (t.includes('int') || t.includes('float') || t.includes('double') || t.includes('decimal')) return 'num';
+                    if (t.includes('bool')) return 'bool';
+                    return 'text';
+                });
+                arrowBatches = data.batches;
+                pageRowCount = data.numRows;
+
+                renderHeader();
+                renderGrid();
+                updatePagination();
+
+                statusBarLeft.textContent = `${totalRows.toLocaleString()} rows • ${duration}ms`;
+                statusBarRight.textContent = `Showing ${offset + 1}-${offset + pageRowCount}`;
+
+                hideLoading();
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        function buildWhereClause() {
+            if (!searchTerm) return '';
+            const s = searchTerm.replace(/'/g, "''");
+            return columns.map(c => `CAST("${c}" AS VARCHAR) ILIKE '%${s}%'`).join(' OR ');
+        }
+
+        function renderHeader() {
+            gridHeader.innerHTML = '';
+            gridHeader.style.display = 'flex';
+            columns.forEach((col, i) => {
+                const div = document.createElement('div');
+                div.className = 'hdr-cell';
+                div.innerHTML = `
+                    <span class="type-icon">${colTypes[i] === 'num' ? '#' : (colTypes[i] === 'bool' ? '?' : 'Aa')}</span>
+                    <span class="col-name">${col}</span>
+                    <span class="sort-icon codicon ${sortCol === col ? (sortDir === 'ASC' ? 'codicon-chevron-up active' : 'codicon-chevron-down active') : 'codicon-arrow-both'}"></span>
+                `;
+                div.onclick = () => toggleSort(col);
+                gridHeader.appendChild(div);
+            });
+        }
+
+        function renderGrid() {
+            gridSpacer.style.display = 'block';
+            gridSpacer.style.height = `${pageRowCount * ROW_HEIGHT}px`;
+
+            const viewportRows = Math.ceil(gridContainer.clientHeight / ROW_HEIGHT) + OVERSCAN * 2;
+            if (poolRows.length !== viewportRows || (poolRows[0] && poolRows[0].childElementCount !== columns.length)) {
+                gridRows.innerHTML = '';
+                poolRows = [];
+                for (let i = 0; i < viewportRows; i++) {
+                    const row = document.createElement('div');
+                    row.className = 'grid-row';
+                    row.style.height = `${ROW_HEIGHT}px`;
+                    columns.forEach(() => {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        row.appendChild(cell);
+                    });
+                    gridRows.appendChild(row);
+                    poolRows.push(row);
+                }
+            }
+
+            renderedStart = -1;
+            updateVirtualScroll();
+        }
+
+        function updateVirtualScroll() {
+            const scrollTop = gridContainer.scrollTop;
+            const start = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
+            const end = Math.min(pageRowCount, start + poolRows.length);
+
+            if (start === renderedStart) return;
+            renderedStart = start;
+
+            poolRows.forEach((row, i) => {
+                const idx = start + i;
+                if (idx >= pageRowCount) {
+                    row.style.display = 'none';
+                    return;
+                }
+                row.style.display = 'flex';
+                row.style.transform = `translateY(${idx * ROW_HEIGHT}px)`;
+
+                columns.forEach((col, ci) => {
+                    const cell = row.children[ci];
+                    const val = getVal(idx, ci);
+                    const type = colTypes[ci];
+
+                    cell.className = 'cell ' + (val === null ? 'null' : type);
+                    cell.textContent = val === null ? 'NULL' : String(val);
+                });
+            });
+        }
+
+        function getVal(rowIdx, colIdx) {
+            let rem = rowIdx;
+            for (const b of arrowBatches) {
+                if (rem < b.numRows) return b.getChildAt(colIdx).get(rem);
+                rem -= b.numRows;
+            }
+            return null;
+        }
+
+        function toggleSort(col) {
+            if (sortCol === col) {
+                sortDir = sortDir === 'ASC' ? 'DESC' : (sortDir === 'DESC' ? null : 'ASC');
+                if (!sortDir) sortCol = null;
+            } else {
+                sortCol = col;
+                sortDir = 'ASC';
+            }
+            refresh();
+        }
+
+        async function toggleSummary() {
+            if (summaryPanel.classList.contains('open')) {
+                summaryPanel.classList.remove('open');
+            } else {
+                summaryPanel.classList.add('open');
+                await runAnalysis();
+            }
+        }
+
+        async function runAnalysis() {
+            const content = document.getElementById('summary-content');
+            content.innerHTML = '<div style="text-align:center; padding:20px;"><div class="spinner-large" style="margin:auto"></div><p>Profiling columns...</p></div>';
+
+            try {
+                const res = await conn.query(`SUMMARIZE ${currentTableName}`);
+                const rows = arrowToObjects(res);
+
+                let html = '';
+                for (const r of rows) {
+                    const type = r.column_type.toLowerCase();
+                    const isNum = type.includes('int') || type.includes('float') || type.includes('double');
+
+                    html += `
+                        <div class="col-card">
+                            <div class="col-card-header">
+                                <span class="col-card-name">${r.column_name}</span>
+                                <span class="col-card-type">${r.column_type}</span>
+                            </div>
+                            <div class="col-stats">
+                                <div class="stat-item"><span class="stat-label">Unique</span><span>${r.approx_unique}</span></div>
+                                <div class="stat-item"><span class="stat-label">Nulls</span><span>${r.null_percentage}%</span></div>
+                                <div class="stat-item"><span class="stat-label">Min</span><span>${r.min || '-'}</span></div>
+                                <div class="stat-item"><span class="stat-label">Max</span><span>${r.max || '-'}</span></div>
+                            </div>
+                            ${isNum ? await renderSparkline(r.column_name) : ''}
+                        </div>
+                    `;
+                }
+                content.innerHTML = html;
+            } catch (err) {
+                content.innerHTML = `<div class="error-box">${err.message}</div>`;
+            }
+        }
+
+        async function renderSparkline(col) {
+            try {
+                // Get histogram bins
+                const res = await conn.query(`
+                    WITH stats AS (SELECT MIN("${col}") as m, MAX("${col}") as x FROM ${currentTableName}),
+                    bins AS (
+                        SELECT floor(("${col}" - m) / (NULLIF(x - m, 0) / 20)) as bin, count(*) as cnt
+                        FROM ${currentTableName}, stats
+                        GROUP BY 1
+                    )
+                    SELECT bin, cnt FROM bins WHERE bin IS NOT NULL ORDER BY bin
+                `);
+                const data = arrowToObjects(res);
+                const maxCnt = Math.max(...data.map(d => Number(d.cnt)), 1);
+
+                let bars = '<div class="chart-mini">';
+                for (let i = 0; i < 20; i++) {
+                    const d = data.find(x => Number(x.bin) === i);
+                    const h = d ? (Number(d.cnt) / maxCnt * 100) : 2;
+                    bars += `<div class="chart-bar" style="height:${h}%" title="${d ? d.cnt : 0} items"></div>`;
+                }
+                bars += '</div>';
+                return bars;
+            } catch { return ''; }
+        }
+
+        function arrowToObjects(res) {
+            const fields = res.schema.fields.map(f => f.name);
+            const objects = [];
+            for (let i = 0; i < res.numRows; i++) {
+                const obj = {};
+                fields.forEach((f, fi) => {
+                    obj[f] = res.batches[0]?.getChildAt(fi)?.get(i);
+                });
+                objects.push(obj);
+            }
+            return objects;
+        }
+
+        function showLoading(text) {
+            loadingText.textContent = text;
+            loadingOverlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            loadingOverlay.style.display = 'none';
+        }
+
+        function showError(msg) {
+            hideLoading();
+            statusBarLeft.innerHTML = `<span style="color:var(--vscode-errorForeground)">Error: ${msg}</span>`;
+            console.error(msg);
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(totalRows / pageSize) || 1;
+            document.getElementById('page-info').textContent = `Page ${currentPage + 1} / ${totalPages}`;
+            document.getElementById('btn-prev').disabled = currentPage === 0;
+            document.getElementById('btn-next').disabled = (currentPage + 1) >= totalPages;
+        }
+
+        // ── Event Listeners ─────────────────────────────────────────────
+        document.getElementById('search-box').addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            currentPage = 0;
+            clearTimeout(window.searchT);
+            window.searchT = setTimeout(refresh, 300);
+        });
+
+        document.getElementById('btn-summary').onclick = toggleSummary;
+
+        document.getElementById('btn-prev').onclick = () => { if (currentPage > 0) { currentPage--; refresh(); } };
+        document.getElementById('btn-next').onclick = () => { if ((currentPage + 1) * pageSize < totalRows) { currentPage++; refresh(); } };
+
+        gridContainer.onscroll = updateVirtualScroll;
+        window.onresize = renderGrid;
+
+        document.getElementById('btn-export').onclick = async () => {
+            const format = document.getElementById('export-format').value.toLowerCase();
+            const btn = document.getElementById('btn-export');
+            btn.disabled = true;
+            showLoading(`Exporting ${format.toUpperCase()}...`);
+            try {
+                const exportFile = `export.${format}`;
+                let query = '';
+                if (format === 'csv') {
+                    query = `COPY (SELECT * FROM ${currentTableName}) TO '${exportFile}' (HEADER, DELIMITER ',')`;
+                } else {
+                    query = `COPY (SELECT * FROM ${currentTableName}) TO '${exportFile}' (FORMAT PARQUET)`;
+                }
+
+                await conn.query(query);
+                const bytes = await db.copyFileToBuffer(exportFile);
+
+                vscode.postMessage({
+                    command: 'downloadData',
+                    format: format,
+                    filename: `fastwrangler_export.${format}`,
+                    content: format === 'parquet' ? bytes : new TextDecoder().decode(bytes)
+                });
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                btn.disabled = false;
+                hideLoading();
+            }
+        };
+
+        window.addEventListener('message', event => {
+            if (event.data.command === 'exportFinished') {
+                const btn = document.getElementById('btn-export');
+                btn.disabled = false;
+                hideLoading();
+            }
+        });
+
+        init();
+    </script>
+</body>
+
+</html>

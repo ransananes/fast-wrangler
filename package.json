@@ -1,0 +1,68 @@
+{
+  "name": "fast-wrangler",
+  "displayName": "FastWrangler",
+  "description": "Lite, instant alternative to Data Wrangler with DuckDB-Wasm",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Data Science",
+    "Machine Learning"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:fastWrangler.explore"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "fastWrangler.explore",
+        "title": "FastWrangler: Explore Data",
+        "icon": "$(database)"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "fastWrangler.explore",
+          "when": "resourceExtname == .csv || resourceExtname == .parquet || resourceExtname == .json",
+          "group": "navigation"
+        }
+      ],
+      "notebook/cell/title": [
+        {
+          "command": "fastWrangler.explore",
+          "when": "notebookType == 'jupyter-notebook'",
+          "group": "navigation",
+          "alt": "fastWrangler.explore"
+        }
+      ],
+      "debug/variables/context": [
+        {
+          "command": "fastWrangler.explore",
+          "when": "debugType == 'python' || debugType == 'debugpy'",
+          "group": "navigation@1"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run bundle && npm run compile",
+    "bundle": "node scripts/bundle-duckdb.mjs",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.9",
+    "@types/vscode": "^1.80.0",
+    "esbuild": "^0.28.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@duckdb/duckdb-wasm": "^1.33.1-dev45.0"
+  }
+}
