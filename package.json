@@ -1,5 +1,5 @@
 {
-  "name": "fast-wrangler",
+  "name": "fast-wrangler-plus",
   "displayName": "FastWrangler",
   "publisher": "ransananes",
   "description": "Lite, instant alternative to Data Wrangler with DuckDB-Wasm",

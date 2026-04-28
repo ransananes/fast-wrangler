@@ -14,13 +14,11 @@
 
 ## 🚀 Getting Started
 
-### Installation
-Open this project in VS Code and press `F5` to launch the extension in the Extension Development Host.
-
 ### How to Use
 1. **From Explorer**: Right-click any `.csv`, `.parquet` file and select **FastWrangler: Explore Data**.
 2. **From Python Debugger**: Use the FastWrangler command to inspect live DataFrames during a debug session.
 
+![showcase](media/preview.gif)
 ## 🛠️ Commands
 
 | Command | Description |
