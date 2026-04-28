@@ -419,7 +419,6 @@
         }
 
         .cell.null {
-            color: #ef4444;
             opacity: 0.6;
             font-style: italic;
             font-weight: 500;
@@ -428,16 +427,13 @@
         .cell.num {
             justify-content: flex-end;
             font-variant-numeric: tabular-nums;
-            color: #34d399;
             font-size: 12px;
         }
 
         .cell.bool {
-            color: #60a5fa;
             font-weight: 600;
         }
 
-        /* ── Overlay & Status ────────────────────────────────────── */
         .status-bar {
             font-size: 12px;
             padding: 8px 24px;
@@ -490,7 +486,6 @@
             }
         }
 
-        /* ── Scrollbar Styling ───────────────────────────────────── */
         ::-webkit-scrollbar {
             width: 14px;
             height: 14px;
@@ -519,7 +514,7 @@
         <div class="toolbar-spacer"></div>
 
         <div class="search-container">
-            <input id="search-box" type="text" placeholder="Global search…" />
+            <input id="search-box" type="text" placeholder="Filter expression (e.g. age > 30)…" />
             <span class="codicon codicon-search search-icon"></span>
         </div>
 
@@ -699,8 +694,7 @@
 
         function buildWhereClause() {
             if (!searchTerm) return '';
-            const s = searchTerm.replace(/'/g, "''");
-            return columns.map(c => `CAST("${c}" AS VARCHAR) ILIKE '%${s}%'`).join(' OR ');
+            return searchTerm;
         }
 
         function renderHeader() {
@@ -898,7 +892,6 @@
             document.getElementById('btn-next').disabled = (currentPage + 1) >= totalPages;
         }
 
-        // ── Event Listeners ─────────────────────────────────────────────
         document.getElementById('search-box').addEventListener('input', (e) => {
             searchTerm = e.target.value;
             currentPage = 0;
