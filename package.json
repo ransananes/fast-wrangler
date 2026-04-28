@@ -1,9 +1,9 @@
 {
   "name": "fast-wrangler-plus",
-  "displayName": "FastWrangler",
+  "displayName": "FastWrangler Plus",
   "publisher": "ransananes",
   "description": "Lite, instant alternative to Data Wrangler with DuckDB-Wasm",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "icon": "media/icon.png",
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
     "onStartupFinished",
     "onCommand:fastWrangler.explore"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
@@ -48,7 +48,7 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run bundle && npm run compile",
+    "vscode:prepublish": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
     "bundle": "node scripts/bundle-duckdb.mjs",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
