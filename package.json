@@ -55,7 +55,7 @@
     "pretest": "npm run compile && npm run lint"
   },
   "devDependencies": {
-    "@types/node": "^18.11.9",
+    "@types/node": "^18.19.130",
     "@types/vscode": "^1.80.0",
     "esbuild": "^0.28.0",
     "typescript": "^5.0.0"
