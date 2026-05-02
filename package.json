@@ -55,12 +55,10 @@
     "pretest": "npm run compile && npm run lint"
   },
   "devDependencies": {
+    "@duckdb/duckdb-wasm": "^1.33.1-dev45.0",
     "@types/node": "^18.19.130",
     "@types/vscode": "^1.80.0",
     "esbuild": "^0.28.0",
     "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "@duckdb/duckdb-wasm": "^1.33.1-dev45.0"
   }
 }

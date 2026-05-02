@@ -26,7 +26,7 @@ export function createDataPanel(
     const asset = (file: string) =>
         panel.webview.asWebviewUri(vscode.Uri.file(path.join(duckdbDir, file))).toString();
 
-    const htmlPath = path.join(context.extensionPath, 'src', 'webview.html');
+    const htmlPath = path.join(context.extensionPath, 'media', 'webview.html');
     panel.webview.html = fs.readFileSync(htmlPath, 'utf8')
         .replace('__FILE_URI__', panel.webview.asWebviewUri(fileUri).toString())
         .replace('__FILE_EXT__', path.extname(fileUri.fsPath).substring(1).toLowerCase())

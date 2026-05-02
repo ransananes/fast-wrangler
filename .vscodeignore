@@ -1,0 +1,9 @@
+src/
+scripts/
+node_modules/
+media/preview.gif
+.claude/
+.gitignore
+tsconfig.json
+package-lock.json
+*.vsix
